@@ -1,0 +1,15 @@
+{
+	"name": "datafactory-pgazureproject",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "bdd5f2e6-9f92-4609-b25f-18d2934b34b3",
+		"tenantId": "b9e9ae90-4a96-4325-93e7-b31985be0aad"
+	}
+}
