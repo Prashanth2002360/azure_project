@@ -13,9 +13,212 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": []
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "select * from bv_srinivas_proj.cntrl_tbl",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzureSql_dataset",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup1').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "gettablename",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "table_name",
+								"value": {
+									"value": "@item().table_name",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "table_type",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "gettablename",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "table_type",
+								"value": {
+									"value": "@item().table_type",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "incremental_load",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "table_type",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "incremantal_col",
+								"value": {
+									"value": "@item().incremental_col",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "incremental_date",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "incremental_load",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "ingestion_dt",
+								"value": {
+									"value": "@item().ingestion_dt ",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "If Condition1",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "incremental_date",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@equals(variables('table_type'),'fullload')",
+									"type": "Expression"
+								},
+								"ifFalseActivities": [
+									{
+										"name": "getqueryincremental",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"policy": {
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "query",
+											"value": {
+												"value": "@concat(\n    'select * from bv_srinivas_proj.',variables('table_name'),'where ', \n    variables('incremantal_col'),' = ','''',variables('ingestion_dt'),''''\n)",
+												"type": "Expression"
+											}
+										}
+									}
+								],
+								"ifTrueActivities": [
+									{
+										"name": "getquery",
+										"type": "SetVariable",
+										"dependsOn": [],
+										"policy": {
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"variableName": "query",
+											"value": {
+												"value": "@concat('select * from bv_srinivas_proj.',variables('table_name'))",
+												"type": "Expression"
+											}
+										}
+									}
+								]
+							}
+						}
+					]
+				}
 			}
 		],
+		"variables": {
+			"table_name": {
+				"type": "String"
+			},
+			"table_type": {
+				"type": "String"
+			},
+			"incremantal_col": {
+				"type": "String"
+			},
+			"ingestion_dt": {
+				"type": "String"
+			},
+			"query": {
+				"type": "String"
+			},
+			"tgtFileName": {
+				"type": "String"
+			}
+		},
 		"annotations": []
 	}
 }
