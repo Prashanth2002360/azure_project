@@ -1,0 +1,24 @@
+{
+	"name": "LS_azuresqldb",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"server": "pgazureprojectserver.database.windows.net",
+			"database": "databaseazureproject",
+			"encrypt": "mandatory",
+			"trustServerCertificate": false,
+			"authenticationType": "SQL",
+			"userName": "pgadmin",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "LS_azurekeyvault",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "sqlpwd",
+				"secretVersion": "112b3b3d5f7f4a939e880fc95336ccc8"
+			}
+		}
+	}
+}
